@@ -15,16 +15,52 @@ namespace MiioNet8.Devices
         {
         }
 
-        protected async Task<(CommunicationResult, List<Property>?)> GetPropertiesAsync(List<ISpecServiceProperty> properties)
+        internal async Task<(CommunicationResult, List<Property>?)> GetPropertiesAsync(GetPropertiesCommand command)
         {
-            var (result, response) = await SendCommandAsync<GetPropertiesResponse>(
-                new GetPropertiesCommand(properties)
-            );
+            var (result, response) = await SendCommandAsync<GetPropertiesResponse>(command);
 
             if (result != CommunicationResult.Success)
                 return (result, null);
 
             return (result, response?.Result);
+        }
+        internal async Task<string?> GetStringPropertyAsync(GetPropertiesCommand command)
+        {
+            var (communicationResult, result) = await GetPropertiesAsync(command);
+
+            if (communicationResult != CommunicationResult.Success || result?.Count != 1)
+                throw new Exception("");
+
+            if (result[0].Value is JsonElement jsonElement)
+            {
+                var value = jsonElement.Deserialize<string>();
+
+                return value;
+            }
+
+            throw new Exception();
+        }
+        internal async Task<T> GetPropertyAsync<T>(GetPropertiesCommand command) where T : struct
+        {
+            var (communicationResult, result) = await GetPropertiesAsync(command);
+
+            if (communicationResult != CommunicationResult.Success || result?.Count != 1)
+                throw new Exception("");
+
+            if (result[0].Value is JsonElement jsonElement)
+            {
+                var value = jsonElement.Deserialize<T>();
+
+                return value;
+            }
+
+            throw new Exception();
+        }
+
+        protected async Task<(CommunicationResult, List<Property>?)> GetPropertiesAsync(
+            List<ISpecServiceProperty> properties)
+        {
+            return await GetPropertiesAsync(new GetPropertiesCommand(properties));
         }
 
         protected async Task<T> GetPropertyAsync<T>(ISpecServiceProperty property) where T : struct
@@ -72,9 +108,12 @@ namespace MiioNet8.Devices
             await SetPropertyAsync(property!, value);
         }
 
-        protected bool GetSpecServiceProperty(string serviceName, string propertyName, out ISpecServiceProperty? property)
+        protected bool GetSpecServiceProperty(string serviceName, string propertyName,
+            out ISpecServiceProperty? property)
         {
-            property = Spec.Properties.FirstOrDefault(p => p.Service.Description.ToLower() == serviceName.ToLower() && p.Description.ToLower() == propertyName.ToLower());
+            property = Spec.Properties.FirstOrDefault(p =>
+                p.Service.Description.ToLower() == serviceName.ToLower() &&
+                p.Description.ToLower() == propertyName.ToLower());
 
             return property != null;
         }
