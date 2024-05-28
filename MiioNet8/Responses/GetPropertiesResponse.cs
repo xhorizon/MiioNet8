@@ -1,11 +1,20 @@
-﻿using MiioNet8.Commands;
+﻿using System.Text.Json;
+using MiioNet8.Commands;
 using System.Text.Json.Serialization;
 
 namespace MiioNet8.Responses
 {
-    internal class GetPropertiesResponse : BaseResponse
+    internal abstract class GetPropertiesResponseBase<T> : BaseResponse
     {
         [JsonPropertyName("result")]
-        public List<Property> Result { get; set; } = new List<Property>();
+        public List<T> Result { get; set; } = new();
+    }
+
+    internal class GetRawPropertiesResponse : GetPropertiesResponseBase<JsonElement>
+    {
+    }
+
+    internal class GetPropertiesResponse : GetPropertiesResponseBase<Property>
+    {
     }
 }

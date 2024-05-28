@@ -15,6 +15,16 @@ namespace MiioNet8.Devices
         {
         }
 
+        internal async Task<(CommunicationResult, List<JsonElement>?)> GetRawPropertiesAsync(GetPropertiesCommand command)
+        {
+            var (result, response) = await SendCommandAsync<GetRawPropertiesResponse>(command);
+
+            if (result != CommunicationResult.Success)
+                return (result, null);
+
+            return (result, response?.Result);
+        }
+
         internal async Task<(CommunicationResult, List<Property>?)> GetPropertiesAsync(GetPropertiesCommand command)
         {
             var (result, response) = await SendCommandAsync<GetPropertiesResponse>(command);
@@ -24,6 +34,7 @@ namespace MiioNet8.Devices
 
             return (result, response?.Result);
         }
+
         internal async Task<string?> GetStringPropertyAsync(GetPropertiesCommand command)
         {
             var (communicationResult, result) = await GetPropertiesAsync(command);
@@ -40,6 +51,7 @@ namespace MiioNet8.Devices
 
             throw new Exception();
         }
+
         internal async Task<T> GetPropertyAsync<T>(GetPropertiesCommand command) where T : struct
         {
             var (communicationResult, result) = await GetPropertiesAsync(command);
@@ -56,6 +68,19 @@ namespace MiioNet8.Devices
 
             throw new Exception();
         }
+
+
+        internal async Task<List<object>> GetPropertyRawAsync(GetPropertiesCommand command)
+        {
+            var (communicationResult, result) = await GetPropertiesAsync(command);
+
+            if (communicationResult != CommunicationResult.Success || result?.Count != 1)
+                throw new Exception("");
+
+
+            throw new Exception();
+        }
+
 
         protected async Task<(CommunicationResult, List<Property>?)> GetPropertiesAsync(
             List<ISpecServiceProperty> properties)

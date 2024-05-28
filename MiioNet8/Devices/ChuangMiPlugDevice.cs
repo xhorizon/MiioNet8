@@ -7,6 +7,7 @@ namespace MiioNet8.Devices;
 /// <summary>
 /// Mi Smart Power Plug 2 (Wi-Fi and Bluetooth Gateway)
 /// </summary>
+/// <remarks>chinese: 米家智能插座2 蓝牙网关版</remarks>
 public class ChuangMiPlugDevice : GenericDevice
 {
     public override string Model { get; protected set; } = "chuangmi.plug.212a01";

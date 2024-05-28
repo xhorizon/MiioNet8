@@ -10,5 +10,8 @@ namespace MiioNet8.Commands
 
         public GetPropertiesCommand(IEnumerable<(string did, int sid, int pid)> properties) : base("get_properties") =>
             Params.AddRange(properties.Select(p => new Property(p.did, p.sid, p.pid)));
+
+        public GetPropertiesCommand(IEnumerable<string> properties, string method) : base(method) =>
+            Params.AddRange(properties);
     }
 }

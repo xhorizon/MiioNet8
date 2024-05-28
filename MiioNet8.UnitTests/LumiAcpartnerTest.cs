@@ -3,12 +3,12 @@ using MiioNet8.Devices;
 
 namespace MiioNet8.UnitTests;
 
-public class ChuangMiPlugTest
+public class LumiAcpartnerTest
 {
     [Test]
     public async Task ElectricPower()
     {
-        var dev = await DeviceFactory.Create<ChuangMiPlugDevice>("192.168.100.154", "f56fec8b56a294c80a3da429d12dd2b7");
+        var dev = await DeviceFactory.Create<LumiAcpartnerDevice>("192.168.100.172", "ad763f91b5d5928149faf66da44736ae");
         var t = 10;
         var sw = new Stopwatch();
         while (t > 0)
@@ -22,6 +22,6 @@ public class ChuangMiPlugTest
             Assert.IsTrue(k > 0);
             Thread.Sleep(1000);
         }
+        
     }
-    
 }
