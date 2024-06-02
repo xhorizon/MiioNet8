@@ -36,9 +36,9 @@ namespace MiioNet8.Devices
             State = DeviceState.Created;
         }
 
-        public async Task<CommunicationResult> ConnectAsync()
+        public async Task<CommunicationResult> ConnectAsync(CancellationToken token = default)
         {
-            var (result, answerPackage) = await Communicate(new HelloPackage(this));
+            var (result, answerPackage) = await Communicate(new HelloPackage(this), token);
 
             if (answerPackage != null)
             {
@@ -57,9 +57,9 @@ namespace MiioNet8.Devices
             return result;
         }
 
-        public async Task<CommunicationResult> UpdateMiioInfoAsync()
+        public async Task<CommunicationResult> UpdateMiioInfoAsync(CancellationToken token = default)
         {
-            var (result, response) = await SendCommandAsync<MiioInfoResponse>(new MiioInfoCommand());
+            var (result, response) = await SendCommandAsync<MiioInfoResponse>(new MiioInfoCommand(), token);
 
             if (response != null)
             {
@@ -79,19 +79,22 @@ namespace MiioNet8.Devices
             var instances = JsonSerializer.Deserialize<AllInstances>(json);
             var targetInstance = instances.Instances.FirstOrDefault(i => i.Model == Model);
 
-            json = await httpClient.GetStringAsync($"https://miot-spec.org/miot-spec-v2/instance?type={targetInstance.Type}");
+            json = await httpClient.GetStringAsync(
+                $"https://miot-spec.org/miot-spec-v2/instance?type={targetInstance.Type}");
             Spec = JsonSerializer.Deserialize<Spec>(json);
 
             return CommunicationResult.Success;
         }
 
-        protected async Task<(CommunicationResult, T?)> SendCommandAsync<T>(ICommand command) where T : BaseResponse
+        protected async Task<(CommunicationResult, T?)> SendCommandAsync<T>(ICommand command, CancellationToken token)
+            where T : BaseResponse
         {
             command.Id = ++DeviceLastCommandId;
 
-            var (result, answerPackage) = await Communicate(new CommandPackage(this, command));
+            var (result, answerPackage) = await Communicate(new CommandPackage(this, command), token);
 
-            if (answerPackage != null) {
+            if (answerPackage != null)
+            {
                 var json = await answerPackage.GetPayloadAsync();
 
                 try
@@ -107,11 +110,13 @@ namespace MiioNet8.Devices
             return (result, null);
         }
 
-        private async Task<(CommunicationResult, IPackage?)> Communicate(IPackage package)
+        private async Task<(CommunicationResult, IPackage?)> Communicate(IPackage package,
+            CancellationToken token = default)
         {
-            var (result, answerPackage) = await Communication.SendAndReceiveAsync(this, package);
+            var (result, answerPackage) = await Communication.SendAndReceiveAsync(this, package, token);
 
-            if (answerPackage != null) {
+            if (answerPackage != null)
+            {
                 DeviceLastCommunicationDateTime = DateTime.UtcNow;
                 DeviceLastTimestamp = answerPackage.Timestamp;
             }

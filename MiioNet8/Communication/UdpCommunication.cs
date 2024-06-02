@@ -10,17 +10,18 @@ namespace MiioNet8.Communication
         public IPEndPoint IPEndPoint { get; private set; }
         public Socket Socket { get; private set; }
 
-        public UdpCommunication(IPAddress ipAddress, int port) 
-        { 
+        public UdpCommunication(IPAddress ipAddress, int port)
+        {
             IPEndPoint = new IPEndPoint(ipAddress, port);
             Socket = new Socket(SocketType.Dgram, ProtocolType.Udp);
         }
 
-        public async Task<(CommunicationResult, int)> SendAsync(IDevice device, IPackage package)
+        public async Task<(CommunicationResult, int)> SendAsync(IDevice device, IPackage package,
+            CancellationToken token = default)
         {
             var buffer = await package.ToByteArrayAsync();
             var bufferMemory = buffer.AsMemory();
-            var bytesSended = await Socket.SendToAsync(bufferMemory, SocketFlags.None, IPEndPoint);
+            var bytesSended = await Socket.SendToAsync(bufferMemory, SocketFlags.None, IPEndPoint, token);
 
             if (bytesSended != buffer.Length)
                 return (CommunicationResult.Error, bytesSended);
@@ -28,11 +29,12 @@ namespace MiioNet8.Communication
             return (CommunicationResult.Success, bytesSended);
         }
 
-        public async Task<(CommunicationResult, IPackage?)> ReceiveAsync(IDevice device)
+        public async Task<(CommunicationResult, IPackage?)> ReceiveAsync(IDevice device,
+            CancellationToken token = default)
         {
             var buffer = GC.AllocateArray<byte>(0xFFFF, true);
             var bufferMemory = buffer.AsMemory();
-            var receivedBytes = await Socket.ReceiveFromAsync(bufferMemory, SocketFlags.None, IPEndPoint);
+            var receivedBytes = await Socket.ReceiveFromAsync(bufferMemory, SocketFlags.None, IPEndPoint, token);
 
             if (receivedBytes.ReceivedBytes < 32)
                 return (CommunicationResult.Error, null);
@@ -44,20 +46,22 @@ namespace MiioNet8.Communication
                 var package = new AnswerPackage(device, data);
 
                 return (CommunicationResult.Success, package);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return (CommunicationResult.Error, null);
             }
         }
 
-        public async Task<(CommunicationResult, IPackage?)> SendAndReceiveAsync(IDevice device, IPackage package)
+        public async Task<(CommunicationResult, IPackage?)> SendAndReceiveAsync(IDevice device, IPackage package,
+            CancellationToken token = default)
         {
-            var (sendResult, _) = await SendAsync(device, package);
+            var (sendResult, _) = await SendAsync(device, package, token);
 
             if (sendResult != CommunicationResult.Success)
                 return (sendResult, null);
 
-            return await ReceiveAsync(device);
+            return await ReceiveAsync(device, token);
         }
     }
 }

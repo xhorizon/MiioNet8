@@ -12,6 +12,6 @@ namespace MiioNet8.Interfaces
         DateTime DeviceLastCommunicationDateTime { get; }
         string Model { get; }
 
-        Task<CommunicationResult> ConnectAsync();
+        Task<CommunicationResult> ConnectAsync(CancellationToken token = default);
     }
 }

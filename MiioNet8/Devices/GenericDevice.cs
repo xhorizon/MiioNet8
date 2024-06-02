@@ -15,9 +15,10 @@ namespace MiioNet8.Devices
         {
         }
 
-        internal async Task<(CommunicationResult, List<JsonElement>?)> GetRawPropertiesAsync(GetPropertiesCommand command)
+        internal async Task<(CommunicationResult, List<JsonElement>?)> GetRawPropertiesAsync(
+            GetPropertiesCommand command, CancellationToken token = default)
         {
-            var (result, response) = await SendCommandAsync<GetRawPropertiesResponse>(command);
+            var (result, response) = await SendCommandAsync<GetRawPropertiesResponse>(command, token);
 
             if (result != CommunicationResult.Success)
                 return (result, null);
@@ -25,9 +26,10 @@ namespace MiioNet8.Devices
             return (result, response?.Result);
         }
 
-        internal async Task<(CommunicationResult, List<Property>?)> GetPropertiesAsync(GetPropertiesCommand command)
+        internal async Task<(CommunicationResult, List<Property>?)> GetPropertiesAsync(GetPropertiesCommand command,
+            CancellationToken token = default)
         {
-            var (result, response) = await SendCommandAsync<GetPropertiesResponse>(command);
+            var (result, response) = await SendCommandAsync<GetPropertiesResponse>(command, token);
 
             if (result != CommunicationResult.Success)
                 return (result, null);
@@ -35,9 +37,10 @@ namespace MiioNet8.Devices
             return (result, response?.Result);
         }
 
-        internal async Task<string?> GetStringPropertyAsync(GetPropertiesCommand command)
+        internal async Task<string?> GetStringPropertyAsync(GetPropertiesCommand command,
+            CancellationToken token = default)
         {
-            var (communicationResult, result) = await GetPropertiesAsync(command);
+            var (communicationResult, result) = await GetPropertiesAsync(command, token);
 
             if (communicationResult != CommunicationResult.Success || result?.Count != 1)
                 throw new Exception("");
@@ -52,9 +55,10 @@ namespace MiioNet8.Devices
             throw new Exception();
         }
 
-        internal async Task<T> GetPropertyAsync<T>(GetPropertiesCommand command) where T : struct
+        internal async Task<T> GetPropertyAsync<T>(GetPropertiesCommand command, CancellationToken token = default)
+            where T : struct
         {
-            var (communicationResult, result) = await GetPropertiesAsync(command);
+            var (communicationResult, result) = await GetPropertiesAsync(command, token);
 
             if (communicationResult != CommunicationResult.Success || result?.Count != 1)
                 throw new Exception("");
@@ -70,9 +74,10 @@ namespace MiioNet8.Devices
         }
 
 
-        internal async Task<List<object>> GetPropertyRawAsync(GetPropertiesCommand command)
+        internal async Task<List<object>> GetPropertyRawAsync(GetPropertiesCommand command,
+            CancellationToken token = default)
         {
-            var (communicationResult, result) = await GetPropertiesAsync(command);
+            var (communicationResult, result) = await GetPropertiesAsync(command, token);
 
             if (communicationResult != CommunicationResult.Success || result?.Count != 1)
                 throw new Exception("");
@@ -83,14 +88,15 @@ namespace MiioNet8.Devices
 
 
         protected async Task<(CommunicationResult, List<Property>?)> GetPropertiesAsync(
-            List<ISpecServiceProperty> properties)
+            List<ISpecServiceProperty> properties, CancellationToken token = default)
         {
-            return await GetPropertiesAsync(new GetPropertiesCommand(properties));
+            return await GetPropertiesAsync(new GetPropertiesCommand(properties), token);
         }
 
-        protected async Task<T> GetPropertyAsync<T>(ISpecServiceProperty property) where T : struct
+        protected async Task<T> GetPropertyAsync<T>(ISpecServiceProperty property, CancellationToken token = default)
+            where T : struct
         {
-            var (communicationResult, result) = await GetPropertiesAsync([property]);
+            var (communicationResult, result) = await GetPropertiesAsync([property], token);
 
             if (communicationResult != CommunicationResult.Success || result?.Count != 1)
                 throw new Exception("");
@@ -105,32 +111,38 @@ namespace MiioNet8.Devices
             throw new Exception();
         }
 
-        protected async Task<T> GetPropertyAsync<T>(string serviceName, string propertyName) where T : struct
+        protected async Task<T> GetPropertyAsync<T>(string serviceName, string propertyName,
+            CancellationToken token = default)
+            where T : struct
         {
             if (!GetSpecServiceProperty(serviceName, propertyName, out var property))
                 throw new Exception("");
 
-            return await GetPropertyAsync<T>(property!);
+            return await GetPropertyAsync<T>(property!, token);
         }
 
-        protected async Task SetPropertiesAsync(List<(ISpecServiceProperty, object)> propertiesWithValue)
+        protected async Task SetPropertiesAsync(List<(ISpecServiceProperty, object)> propertiesWithValue,
+            CancellationToken token = default)
         {
             var (result, response) = await SendCommandAsync<BaseResponse>(
-                new SetPropertiesCommand(propertiesWithValue)
+                new SetPropertiesCommand(propertiesWithValue),
+                token
             );
         }
 
-        protected async Task SetPropertyAsync(ISpecServiceProperty property, object value)
+        protected async Task SetPropertyAsync(ISpecServiceProperty property, object value,
+            CancellationToken token = default)
         {
-            await SetPropertiesAsync([(property, value)]);
+            await SetPropertiesAsync([(property, value)], token);
         }
 
-        protected async Task SetPropertyAsync(string serviceName, string propertyName, object value)
+        protected async Task SetPropertyAsync(string serviceName, string propertyName, object value,
+            CancellationToken token = default)
         {
             if (!GetSpecServiceProperty(serviceName, propertyName, out var property))
                 throw new Exception("");
 
-            await SetPropertyAsync(property!, value);
+            await SetPropertyAsync(property!, value, token);
         }
 
         protected bool GetSpecServiceProperty(string serviceName, string propertyName,

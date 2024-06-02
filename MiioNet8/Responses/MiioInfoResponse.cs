@@ -7,22 +7,22 @@ namespace MiioNet8.Responses
         public class ResultModel
         {
             [JsonPropertyName("model")]
-            public string Model { get; set; }
+            public string? Model { get; set; }
             [JsonPropertyName("token")]
-            public string Token { get; set; }
+            public string? Token { get; set; }
             [JsonPropertyName("fw_ver")]
-            public string FwVer { get; set; }
+            public string? FwVer { get; set; }
             [JsonPropertyName("mcu_fw_ver")]
-            public string McuFwVer { get; set; }
+            public string? McuFwVer { get; set; }
             [JsonPropertyName("miio_ver")]
-            public string MiioVer { get; set; }
+            public string? MiioVer { get; set; }
             [JsonPropertyName("hw_ver")]
-            public string HwVer { get; set; }
+            public string? HwVer { get; set; }
             [JsonPropertyName("mac")]
-            public string MAC { get; set; }
+            public string? MAC { get; set; }
         }
 
         [JsonPropertyName("result")]
-        public ResultModel Result { get; set; }
+        public ResultModel? Result { get; set; }
     }
 }
