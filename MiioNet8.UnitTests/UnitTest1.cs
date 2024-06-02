@@ -16,9 +16,9 @@ namespace MiioNet8.UnitTests
         public async Task GenericDeviceConnectionTestAsync()
         {
             var communication = new Mock<ICommunication>();
-            communication.Setup(c => c.SendAndReceiveAsync(It.IsAny<IDevice>(), It.IsAny<IPackage>()))
+            communication.Setup(c => c.SendAndReceiveAsync(It.IsAny<IDevice>(), It.IsAny<IPackage>(),CancellationToken.None))
                 .ReturnsAsync((Communication.CommunicationResult.Error, null));
-            communication.Setup(c => c.SendAndReceiveAsync(It.IsAny<IDevice>(), It.Is<IPackage>(p => p is HelloPackage)))
+            communication.Setup(c => c.SendAndReceiveAsync(It.IsAny<IDevice>(), It.Is<IPackage>(p => p is HelloPackage),CancellationToken.None))
                 .ReturnsAsync((IDevice device, IPackage package) => {
                     return (Communication.CommunicationResult.Success, null);
                 });
